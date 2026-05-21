@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: m-motors-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mmotors_db
+    username: mmotors_user
+    password: mmotors_password
+
+  jpa:
+    hibernate:
+      ddl-auto:validate
+    open-in-view: false
+    properties:
+      hibernate:
+        formate_sql: true
+  flyway:
+    enable: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+    endpoints:
+      web:
+        exposure:
+          include: health,info,metrics,flyway
+
+app:
+  jwt:
+    secret: secret
+    expiration-ms: 86400000
