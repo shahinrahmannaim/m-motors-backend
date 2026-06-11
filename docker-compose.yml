@@ -4,7 +4,7 @@ services:
     container_name: mmotors-postgres
     environment:
       POSTGRES_DB: mmotors_db
-      POSTGRES_USER: mmotors_users
+      POSTGRES_USER: mmotors_user
       POSTGRES_PASSWORD: mmotors_password
     ports:
       - "5432:5432"
