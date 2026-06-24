@@ -3,6 +3,7 @@ package com.mmotors.m_motors_backend.api.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -33,7 +34,20 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/v1/admin/**")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/vehicles/**")
+
+                        .permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/v1/vehicles/**")
+
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/vehicles/**")
+
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/vehicles/**")
+
                         .hasRole("ADMIN")
 
                         .requestMatchers("/api/v1/users/**")
