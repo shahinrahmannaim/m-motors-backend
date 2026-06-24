@@ -5,10 +5,16 @@ import com.mmotors.m_motors_backend.api.vehicle.dto.UpdateVehicleRequest;
 import com.mmotors.m_motors_backend.api.vehicle.dto.VehicleResponse;
 import com.mmotors.m_motors_backend.api.vehicle.entity.Vehicle;
 import com.mmotors.m_motors_backend.api.vehicle.entity.VehicleStatus;
+import com.mmotors.m_motors_backend.api.vehicle.entity.VehicleType;
+import com.mmotors.m_motors_backend.api.vehicle.mapper.VehicleMapper;
 import com.mmotors.m_motors_backend.api.vehicle.repository.VehicleRepository;
+import com.mmotors.m_motors_backend.api.vehicle.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -17,6 +23,7 @@ import java.util.List;
 public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final VehicleMapper vehicleMapper;
 
     @Override
     public VehicleResponse createVehicle(CreateVehicleRequest request) {
@@ -38,14 +45,45 @@ public class VehicleServiceImpl implements VehicleService {
 
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
-        return mapToVehicleResponse(savedVehicle);
+        return vehicleMapper.toResponse(savedVehicle);
     }
 
     @Override
-    public List<VehicleResponse> getAllVehicles() {
-        return vehicleRepository.findAll()
+    public List<VehicleResponse> getRecentVehicles() {
+
+        Specification<Vehicle> specification =
+                VehicleSpecification.hasStatus(VehicleStatus.AVAILABLE);
+
+        return vehicleRepository.findAll(specification, PageRequest.of(0, 20))
                 .stream()
-                .map(this::mapToVehicleResponse)
+                .map(vehicleMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<VehicleResponse> searchVehicles(
+            String brand,
+            VehicleType type,
+            VehicleStatus status,
+            String fuelType,
+            BigDecimal minPrice,
+            BigDecimal maxPrice
+    ) {
+
+        VehicleStatus effectiveStatus =
+                (status != null) ? status : VehicleStatus.AVAILABLE;
+
+        Specification<Vehicle> specification = Specification
+                .where(VehicleSpecification.hasStatus(effectiveStatus))
+                .and(VehicleSpecification.hasBrand(brand))
+                .and(VehicleSpecification.hasType(type))
+                .and(VehicleSpecification.hasFuelType(fuelType))
+                .and(VehicleSpecification.priceGreaterThanOrEqual(minPrice))
+                .and(VehicleSpecification.priceLessThanOrEqual(maxPrice));
+
+        return vehicleRepository.findAll(specification)
+                .stream()
+                .map(vehicleMapper::toResponse)
                 .toList();
     }
 
@@ -53,7 +91,7 @@ public class VehicleServiceImpl implements VehicleService {
     public VehicleResponse getVehicleById(Long id) {
         Vehicle vehicle = findVehicleById(id);
 
-        return mapToVehicleResponse(vehicle);
+        return vehicleMapper.toResponse(vehicle);
     }
 
     @Override
@@ -109,34 +147,18 @@ public class VehicleServiceImpl implements VehicleService {
 
         Vehicle updatedVehicle = vehicleRepository.save(vehicle);
 
-        return mapToVehicleResponse(updatedVehicle);
+        return vehicleMapper.toResponse(updatedVehicle);
     }
 
     @Override
     public void deleteVehicle(Long id) {
         Vehicle vehicle = findVehicleById(id);
+
         vehicleRepository.delete(vehicle);
     }
 
     private Vehicle findVehicleById(Long id) {
         return vehicleRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
-    }
-
-    private VehicleResponse mapToVehicleResponse(Vehicle vehicle) {
-        return new VehicleResponse(
-                vehicle.getId(),
-                vehicle.getBrand(),
-                vehicle.getModel(),
-                vehicle.getYear(),
-                vehicle.getMileage(),
-                vehicle.getPrice(),
-                vehicle.getFuelType(),
-                vehicle.getTransmission(),
-                vehicle.getStatus(),
-                vehicle.getType(),
-                vehicle.getImageUrl(),
-                vehicle.getDescription()
-        );
     }
 }
