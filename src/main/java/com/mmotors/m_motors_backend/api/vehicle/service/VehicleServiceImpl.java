@@ -30,7 +30,6 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleResponse createVehicle(CreateVehicleRequest request) {
-
         Vehicle vehicle = new Vehicle();
 
         vehicle.setBrand(request.brand());
@@ -53,11 +52,13 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public List<VehicleResponse> getRecentVehicles() {
-
         Specification<Vehicle> specification =
                 VehicleSpecification.hasStatus(VehicleStatus.AVAILABLE);
 
-        return vehicleRepository.findAll(specification, PageRequest.of(0, 20))
+        return vehicleRepository.findAll(
+                        specification,
+                        PageRequest.of(0, 20, Sort.by("createdDate").descending())
+                )
                 .stream()
                 .map(vehicleMapper::toResponse)
                 .toList();
@@ -100,13 +101,11 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public VehicleResponse getVehicleById(Long id) {
         Vehicle vehicle = findVehicleById(id);
-
         return vehicleMapper.toResponse(vehicle);
     }
 
     @Override
     public VehicleResponse updateVehicle(Long id, UpdateVehicleRequest request) {
-
         Vehicle vehicle = findVehicleById(id);
 
         if (request.brand() != null && !request.brand().isBlank()) {
@@ -163,7 +162,6 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void deleteVehicle(Long id) {
         Vehicle vehicle = findVehicleById(id);
-
         vehicleRepository.delete(vehicle);
     }
 

@@ -22,15 +22,17 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
-    // Creates a new vehicle (admin endpoint)
+    // Creates a new vehicle. Admin only through SecurityConfig.
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public VehicleResponse createVehicle(@RequestBody @Validated CreateVehicleRequest request) {
+    public VehicleResponse createVehicle(
+            @RequestBody @Validated CreateVehicleRequest request
+    ) {
         return vehicleService.createVehicle(request);
     }
 
-    // Returns the latest 20 available vehicles for the public homepage
-    @GetMapping("/recent")
+    // Public homepage/catalog endpoint: latest 20 AVAILABLE vehicles.
+    @GetMapping
     public List<VehicleResponse> getRecentVehicles() {
         return vehicleService.getRecentVehicles();
     }
@@ -88,13 +90,13 @@ public class VehicleController {
 
     }
 
-    // Returns one vehicle by its id
+    // Public detail endpoint.
     @GetMapping("/{id}")
     public VehicleResponse getVehicleById(@PathVariable Long id) {
         return vehicleService.getVehicleById(id);
     }
 
-    // Updates a vehicle by id (admin endpoint)
+    // Updates a vehicle. Admin only through SecurityConfig.
     @PutMapping("/{id}")
     public VehicleResponse updateVehicleById(
             @PathVariable Long id,
@@ -103,7 +105,7 @@ public class VehicleController {
         return vehicleService.updateVehicle(id, request);
     }
 
-    // Deletes a vehicle by id (admin endpoint)
+    // Deletes a vehicle. Admin only through SecurityConfig.
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteVehicleById(@PathVariable Long id) {
