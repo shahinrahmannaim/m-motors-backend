@@ -10,7 +10,10 @@ import com.mmotors.m_motors_backend.api.vehicle.mapper.VehicleMapper;
 import com.mmotors.m_motors_backend.api.vehicle.repository.VehicleRepository;
 import com.mmotors.m_motors_backend.api.vehicle.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -61,15 +64,18 @@ public class VehicleServiceImpl implements VehicleService {
     }
 
     @Override
-    public List<VehicleResponse> searchVehicles(
+    public Page<VehicleResponse> searchVehicles(
             String brand,
             VehicleType type,
             VehicleStatus status,
             String fuelType,
             BigDecimal minPrice,
-            BigDecimal maxPrice
+            BigDecimal maxPrice,
+            int page,
+            int size,
+            String sortBy,
+            String direction
     ) {
-
         VehicleStatus effectiveStatus =
                 (status != null) ? status : VehicleStatus.AVAILABLE;
 
@@ -81,10 +87,14 @@ public class VehicleServiceImpl implements VehicleService {
                 .and(VehicleSpecification.priceGreaterThanOrEqual(minPrice))
                 .and(VehicleSpecification.priceLessThanOrEqual(maxPrice));
 
-        return vehicleRepository.findAll(specification)
-                .stream()
-                .map(vehicleMapper::toResponse)
-                .toList();
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return vehicleRepository.findAll(specification, pageable)
+                .map(vehicleMapper::toResponse);
     }
 
     @Override
