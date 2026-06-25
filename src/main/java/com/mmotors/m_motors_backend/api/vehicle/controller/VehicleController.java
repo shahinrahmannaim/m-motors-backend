@@ -3,41 +3,73 @@ package com.mmotors.m_motors_backend.api.vehicle.controller;
 import com.mmotors.m_motors_backend.api.vehicle.dto.CreateVehicleRequest;
 import com.mmotors.m_motors_backend.api.vehicle.dto.UpdateVehicleRequest;
 import com.mmotors.m_motors_backend.api.vehicle.dto.VehicleResponse;
+import com.mmotors.m_motors_backend.api.vehicle.entity.VehicleStatus;
+import com.mmotors.m_motors_backend.api.vehicle.entity.VehicleType;
 import com.mmotors.m_motors_backend.api.vehicle.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/vehicles")
+@RequestMapping("/api/v1/vehicles")
 @RequiredArgsConstructor
 public class VehicleController {
+
     private final VehicleService vehicleService;
 
+    // Creates a new vehicle (admin endpoint)
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public VehicleResponse createVehicle(@RequestBody CreateVehicleRequest request) {
+    public VehicleResponse createVehicle(@RequestBody @Validated CreateVehicleRequest request) {
         return vehicleService.createVehicle(request);
     }
 
-    @GetMapping
-    @ResponseStatus(HttpStatus.OK)
-    public List<VehicleResponse>  getAllVehicles() {
-        return vehicleService.getAllVehicles();
+    // Returns the latest 20 available vehicles for the public homepage
+    @GetMapping("/recent")
+    public List<VehicleResponse> getRecentVehicles() {
+        return vehicleService.getRecentVehicles();
     }
 
+    // Returns vehicles filtered by optional query params
+    @GetMapping
+    public List<VehicleResponse> searchVehicles(
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) VehicleType type,
+            @RequestParam(required = false) VehicleStatus status,
+            @RequestParam(required = false) String fuelType,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice
+    ) {
+        return vehicleService.searchVehicles(
+                brand,
+                type,
+                status,
+                fuelType,
+                minPrice,
+                maxPrice
+        );
+    }
+
+    // Returns one vehicle by its id
     @GetMapping("/{id}")
     public VehicleResponse getVehicleById(@PathVariable Long id) {
         return vehicleService.getVehicleById(id);
     }
 
+    // Updates a vehicle by id (admin endpoint)
     @PutMapping("/{id}")
-    public VehicleResponse updateVehicleById(@PathVariable Long id, @RequestBody @Validated UpdateVehicleRequest request) {
+    public VehicleResponse updateVehicleById(
+            @PathVariable Long id,
+            @RequestBody @Validated UpdateVehicleRequest request
+    ) {
         return vehicleService.updateVehicle(id, request);
     }
+
+    // Deletes a vehicle by id (admin endpoint)
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteVehicleById(@PathVariable Long id) {

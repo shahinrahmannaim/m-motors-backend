@@ -3,14 +3,26 @@ package com.mmotors.m_motors_backend.api.vehicle.service;
 import com.mmotors.m_motors_backend.api.vehicle.dto.CreateVehicleRequest;
 import com.mmotors.m_motors_backend.api.vehicle.dto.UpdateVehicleRequest;
 import com.mmotors.m_motors_backend.api.vehicle.dto.VehicleResponse;
+import com.mmotors.m_motors_backend.api.vehicle.entity.VehicleStatus;
+import com.mmotors.m_motors_backend.api.vehicle.entity.VehicleType;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface VehicleService {
 
     VehicleResponse createVehicle(CreateVehicleRequest request);
 
-    List<VehicleResponse> getAllVehicles();
+    List<VehicleResponse> getRecentVehicles();
+
+    List<VehicleResponse> searchVehicles(
+            String brand,
+            VehicleType type,
+            VehicleStatus status,
+            String fuelType,
+            BigDecimal minPrice,
+            BigDecimal maxPrice
+    );
 
     VehicleResponse getVehicleById(Long id);
 
