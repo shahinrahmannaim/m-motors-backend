@@ -6,6 +6,7 @@ import com.mmotors.m_motors_backend.api.vehicle.dto.VehicleResponse;
 import com.mmotors.m_motors_backend.api.vehicle.entity.VehicleStatus;
 import com.mmotors.m_motors_backend.api.vehicle.entity.VehicleType;
 import org.springframework.data.domain.Page;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -16,27 +17,16 @@ public interface VehicleService {
     List<VehicleResponse> getRecentVehicles();
 
     Page<VehicleResponse> searchVehicles(
-
             String brand,
-
             VehicleType type,
-
             VehicleStatus status,
-
             String fuelType,
-
             BigDecimal minPrice,
-
             BigDecimal maxPrice,
-
             int page,
-
             int size,
-
             String sortBy,
-
             String direction
-
     );
 
     VehicleResponse getVehicleById(Long id);
