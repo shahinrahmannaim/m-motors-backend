@@ -37,57 +37,32 @@ public class VehicleController {
         return vehicleService.getRecentVehicles();
     }
 
-    // Returns vehicles filtered by optional query params
-    @GetMapping
-
+    // Public search endpoint: filters + pagination + sorting.
+    @GetMapping("/search")
     public Page<VehicleResponse> searchVehicles(
-
             @RequestParam(required = false) String brand,
-
             @RequestParam(required = false) VehicleType type,
-
             @RequestParam(required = false) VehicleStatus status,
-
             @RequestParam(required = false) String fuelType,
-
             @RequestParam(required = false) BigDecimal minPrice,
-
             @RequestParam(required = false) BigDecimal maxPrice,
-
             @RequestParam(defaultValue = "0") int page,
-
             @RequestParam(defaultValue = "12") int size,
-
             @RequestParam(defaultValue = "createdDate") String sortBy,
-
             @RequestParam(defaultValue = "desc") String direction
-
     ) {
-
         return vehicleService.searchVehicles(
-
                 brand,
-
                 type,
-
                 status,
-
                 fuelType,
-
                 minPrice,
-
                 maxPrice,
-
                 page,
-
                 size,
-
                 sortBy,
-
                 direction
-
         );
-
     }
 
     // Public detail endpoint.
