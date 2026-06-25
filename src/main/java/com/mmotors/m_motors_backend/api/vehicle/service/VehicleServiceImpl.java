@@ -10,7 +10,7 @@ import com.mmotors.m_motors_backend.api.vehicle.mapper.VehicleMapper;
 import com.mmotors.m_motors_backend.api.vehicle.repository.VehicleRepository;
 import com.mmotors.m_motors_backend.api.vehicle.specification.VehicleSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +27,6 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleResponse createVehicle(CreateVehicleRequest request) {
-
         Vehicle vehicle = new Vehicle();
 
         vehicle.setBrand(request.brand());
@@ -50,26 +49,31 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public List<VehicleResponse> getRecentVehicles() {
-
         Specification<Vehicle> specification =
                 VehicleSpecification.hasStatus(VehicleStatus.AVAILABLE);
 
-        return vehicleRepository.findAll(specification, PageRequest.of(0, 20))
+        return vehicleRepository.findAll(
+                        specification,
+                        PageRequest.of(0, 20, Sort.by("createdDate").descending())
+                )
                 .stream()
                 .map(vehicleMapper::toResponse)
                 .toList();
     }
 
     @Override
-    public List<VehicleResponse> searchVehicles(
+    public Page<VehicleResponse> searchVehicles(
             String brand,
             VehicleType type,
             VehicleStatus status,
             String fuelType,
             BigDecimal minPrice,
-            BigDecimal maxPrice
+            BigDecimal maxPrice,
+            int page,
+            int size,
+            String sortBy,
+            String direction
     ) {
-
         VehicleStatus effectiveStatus =
                 (status != null) ? status : VehicleStatus.AVAILABLE;
 
@@ -81,22 +85,24 @@ public class VehicleServiceImpl implements VehicleService {
                 .and(VehicleSpecification.priceGreaterThanOrEqual(minPrice))
                 .and(VehicleSpecification.priceLessThanOrEqual(maxPrice));
 
-        return vehicleRepository.findAll(specification)
-                .stream()
-                .map(vehicleMapper::toResponse)
-                .toList();
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return vehicleRepository.findAll(specification, pageable)
+                .map(vehicleMapper::toResponse);
     }
 
     @Override
     public VehicleResponse getVehicleById(Long id) {
         Vehicle vehicle = findVehicleById(id);
-
         return vehicleMapper.toResponse(vehicle);
     }
 
     @Override
     public VehicleResponse updateVehicle(Long id, UpdateVehicleRequest request) {
-
         Vehicle vehicle = findVehicleById(id);
 
         if (request.brand() != null && !request.brand().isBlank()) {
@@ -153,7 +159,6 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public void deleteVehicle(Long id) {
         Vehicle vehicle = findVehicleById(id);
-
         vehicleRepository.delete(vehicle);
     }
 
