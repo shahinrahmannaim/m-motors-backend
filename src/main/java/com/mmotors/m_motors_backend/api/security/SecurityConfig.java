@@ -49,6 +49,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/vehicles/**")
 
                         .hasRole("ADMIN")
+                        .requestMatchers("/api/v1/dossiers/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/dossiers/**").hasAnyRole("USER", "ADMIN")
 
                         .requestMatchers("/api/v1/users/**")
                         .hasAnyRole("USER", "ADMIN")
