@@ -8,6 +8,7 @@ import com.mmotors.m_motors_backend.api.user.entity.Role;
 import com.mmotors.m_motors_backend.api.user.entity.User;
 import com.mmotors.m_motors_backend.api.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -93,12 +94,21 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private User getAuthenticatedUser() {
-        return (User) SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getPrincipal();
-    }
+   private User getAuthenticatedUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if(authentication == null || !authentication.isAuthenticated()){
+            throw new IllegalArgumentException("User not authenticated");
+        }
+        Object principal = authentication.getPrincipal();
+        if(principal instanceof User user){
+            return user;
+        }
+        if(principal instanceof  String email){
+            return userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Current user not found"));
+        }
+        throw new IllegalArgumentException("Current user not found");
+   }
 
     private UserResponse mapToUserResponse(User user) {
         return new UserResponse(
