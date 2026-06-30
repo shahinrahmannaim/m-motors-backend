@@ -1,5 +1,6 @@
 package com.mmotors.m_motors_backend.api.vehicle.service;
 
+import com.mmotors.m_motors_backend.api.common.exception.ResourceNotFoundException;
 import com.mmotors.m_motors_backend.api.vehicle.dto.CreateVehicleRequest;
 import com.mmotors.m_motors_backend.api.vehicle.dto.UpdateVehicleRequest;
 import com.mmotors.m_motors_backend.api.vehicle.dto.VehicleResponse;
@@ -164,6 +165,6 @@ public class VehicleServiceImpl implements VehicleService {
 
     private Vehicle findVehicleById(Long id) {
         return vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vehicle not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found"));
     }
 }

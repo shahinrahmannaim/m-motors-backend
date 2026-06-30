@@ -1,5 +1,8 @@
 package com.mmotors.m_motors_backend.api.user.service;
 
+import com.mmotors.m_motors_backend.api.common.exception.BadRequestException;
+import com.mmotors.m_motors_backend.api.common.exception.ForbiddenException;
+import com.mmotors.m_motors_backend.api.common.exception.ResourceNotFoundException;
 import com.mmotors.m_motors_backend.api.user.dto.ChangePasswordRequest;
 import com.mmotors.m_motors_backend.api.user.dto.RegisterRequest;
 import com.mmotors.m_motors_backend.api.user.dto.UpdateUserRequest;
@@ -24,7 +27,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new BadRequestException("Email already exists");
         }
 
         User user = new User();
@@ -66,7 +69,7 @@ public class UserServiceImpl implements UserService {
             boolean emailChanged = !request.email().equals(user.getEmail());
 
             if (emailAlreadyExists && emailChanged) {
-                throw new IllegalArgumentException("Email already exists");
+                throw new BadRequestException("Email already exists");
             }
 
             user.setEmail(request.email());
@@ -85,7 +88,7 @@ public class UserServiceImpl implements UserService {
         User user = getAuthenticatedUser();
 
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Current password is incorrect");
+            throw new BadRequestException("Current password is incorrect");
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
@@ -97,7 +100,7 @@ public class UserServiceImpl implements UserService {
    private User getAuthenticatedUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if(authentication == null || !authentication.isAuthenticated()){
-            throw new IllegalArgumentException("User not authenticated");
+            throw new ForbiddenException("User not authenticated");
         }
         Object principal = authentication.getPrincipal();
         if(principal instanceof User user){
@@ -105,9 +108,9 @@ public class UserServiceImpl implements UserService {
         }
         if(principal instanceof  String email){
             return userRepository.findByEmail(email)
-                    .orElseThrow(() -> new IllegalArgumentException("Current user not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
         }
-        throw new IllegalArgumentException("Current user not found");
+        throw new ForbiddenException("Current user not found");
    }
 
     private UserResponse mapToUserResponse(User user) {

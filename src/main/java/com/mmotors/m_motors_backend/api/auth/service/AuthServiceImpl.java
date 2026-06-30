@@ -2,6 +2,7 @@ package com.mmotors.m_motors_backend.api.auth.service;
 
 import com.mmotors.m_motors_backend.api.auth.dto.AuthResponse;
 import com.mmotors.m_motors_backend.api.auth.dto.LoginRequest;
+import com.mmotors.m_motors_backend.api.common.exception.BadRequestException;
 import com.mmotors.m_motors_backend.api.security.JwtService;
 import com.mmotors.m_motors_backend.api.user.entity.User;
 import com.mmotors.m_motors_backend.api.user.repository.UserRepository;
@@ -19,10 +20,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request){
         User user = userRepository.findByEmail(request.email())
-                .orElseThrow(()->new IllegalArgumentException("Invalid Credentials"));
+                .orElseThrow(()->new BadRequestException("Invalid Credentials"));
         boolean passwordMatches = passwordEncoder.matches(request.password(), user.getPassword());
         if(!passwordMatches){
-            throw new IllegalArgumentException("Invalid Credentials");
+            throw new BadRequestException("Invalid Credentials");
         }
         String token = jwtService.generateToken(user);
         return new AuthResponse(
