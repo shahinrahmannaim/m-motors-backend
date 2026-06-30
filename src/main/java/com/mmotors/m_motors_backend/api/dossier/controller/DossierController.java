@@ -3,8 +3,11 @@ package com.mmotors.m_motors_backend.api.dossier.controller;
 import com.mmotors.m_motors_backend.api.dossier.dto.CreateDossierRequest;
 import com.mmotors.m_motors_backend.api.dossier.dto.DossierResponse;
 import com.mmotors.m_motors_backend.api.dossier.dto.UpdateDossierStatusRequest;
+import com.mmotors.m_motors_backend.api.dossier.entity.DossierStatus;
+import com.mmotors.m_motors_backend.api.dossier.entity.DossierType;
 import com.mmotors.m_motors_backend.api.dossier.service.DossierService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +41,24 @@ public class DossierController {
 
     // Admin gets all dossiers
     @GetMapping("/admin")
-    public List<DossierResponse> getAllDossiers(){
-        return  dossierService.getAllDossiers();
-
+    public Page<DossierResponse> getAllDossiers(
+            @RequestParam(required = false) DossierStatus status,
+            @RequestParam(required = false) DossierType type,
+            @RequestParam(required = false) String email,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        return dossierService.getAllDossiers(
+                status,
+                type,
+                email,
+                page,
+                size,
+                sortBy,
+                direction
+        );
     }
 
     @PatchMapping("/admin/{id}/status")
